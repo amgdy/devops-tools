@@ -1,4 +1,6 @@
-#!/bin/bash
+#!/usr/bin/env bash
+
+set -e
 
 function echo_message() {
     echo -e "\n\033[32m$*\033[0m"
@@ -78,72 +80,5 @@ sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin 
 sudo usermod -aG docker "$USER"
 docker version && docker info
 
-read -rp "What is Azure Pieplines Agent Folder? " my_var
-
-azagent_version=$(curl -s https://api.github.com/repos/microsoft/azure-pipelines-agent/releases/latest | jq -r '.tag_name[1:]')
-
-time curl --progress-bar --verbose -sL "https://vstsagentpackage.azureedge.net/agent/${azagent_version}/vsts-agent-linux-x64-${azagent_version}.tar.gz" -o azagent.tar.gz
-
-read -p "How manay agents you want to configure? " agents_count
-read -p "Azure DevOps Organization URL: " azagent_org_url
-read -sp "Personal Access Token: " azagent_pat
-read -p "Agent Pool name: " azagent_pool_name
-
-for i in $(seq -f "%02g" $agents_count); do
-    agent_folder="azagent_${i}"
-    if [[ -d $agent_folder ]]; then
-        echo "$agent_folder already exists"
-    else
-        echo "Creating $agent_folder"
-        mkdir "$agent_folder"
-        tar -xvf azagent.tar.gz -C "$agent_folder"
-        azagent_name="$(hostname)_$agent_folder"
-
-        ./"${agent_folder}"/config.sh --unattended --acceptTeeEula \
-            --url "$azagent_org_url" \
-            --aut "pat" \
-            --token "$azagent_pat" \
-            --pool "$azagent_pool_name" \
-            --agent "$azagent_name" \
-            --replace
-        break
-    fi
-done
-
-count=0
-i=0
-while [ "$count" -lt "5" ]; do
-
-    i=$((i + 1))
-
-    azagent_folder_name="azagent$(printf "%05g" $i)"
-    # Check if a folder with the variable count exists
-    if [ -d "$azagent_folder_name" ]; then
-        echo "The folder '$azagent_folder_name' already exists."
-
-        # Increment the count and try again
-        i=$((i + 1))
-    else
-        # Create the folder and break out of the loop
-        mkdir "$azagent_folder_name"
-        echo "The folder '$azagent_folder_name' has been created."
-
-        tar -xvf azagent.tar.gz -C "$azagent_folder_name"
-        azagent_name="$(hostname)_$azagent_folder_name"
-
-        ./"${azagent_folder_name}"/config.sh --unattended --acceptTeeEula \
-            --url "$azagent_org_url" \
-            --auth "pat" \
-            --token "$azagent_pat" \
-            --pool "$azagent_pool_name" \
-            --agent "$azagent_name" \
-            --replace
-
-        cd "$azagent_folder_name"
-        sudo ./svc.sh install
-        sudo ./svc.sh start
-
-        count=$((count + 1))
-        cd ..
-    fi
-done
+# Disable dotnet telemetry
+export DOTNET_CLI_TELEMETRY_OPTOUT=1
