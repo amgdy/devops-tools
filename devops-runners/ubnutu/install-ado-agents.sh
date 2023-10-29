@@ -50,7 +50,7 @@ pool_name=${pool_name:-${pool_name_default}}
 AZP_AGENT_VERSION=$(curl -s https://api.github.com/repos/microsoft/azure-pipelines-agent/releases/latest | jq -r '.tag_name[1:]')
 
 # Download the agent file
-wget -O azagent.tar.gz "https://vstsagentpackage.azureedge.net/agent/${AZP_AGENT_VERSION}/vsts-agent-linux-x64-${azagent_version}.tar.gz"
+wget -O azagent.tar.gz "https://vstsagentpackage.azureedge.net/agent/${AZP_AGENT_VERSION}/vsts-agent-linux-x64-${AZP_AGENT_VERSION}.tar.gz"
 
 echo_message "Agent downloaded"
 
