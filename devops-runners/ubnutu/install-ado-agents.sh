@@ -75,7 +75,7 @@ while [ "$count" -lt "$agents_count" ]; do
 
         cd "$azagent_folder_name"
 
-        ./bin/installdependencies.sh
+        sudo ./bin/installdependencies.sh
 
         ./config.sh --unattended \
             --acceptTeeEula \
@@ -89,9 +89,9 @@ while [ "$count" -lt "$agents_count" ]; do
 
         echo_message "Agent with name $azagent_name configured at $azagent_folder_name"
 
-        ./svc.sh install
+        sudo ./svc.sh install
 
-        ./svc.sh start
+        sudo ./svc.sh start
 
         count=$((count + 1))
         cd ..
