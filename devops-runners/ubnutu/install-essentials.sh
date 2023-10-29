@@ -43,6 +43,17 @@ curl -LsS https://aka.ms/InstallAzureCLIDeb | bash
 echo_message "Install Azure DevOps CLI"
 az --version && az extension add --name azure-devops
 
+echo_message "Install Bicep CLI"
+# Fetch the latest Bicep CLI binary
+curl -Lo bicep https://github.com/Azure/bicep/releases/latest/download/bicep-linux-x64
+# Mark it as executable
+chmod +x ./bicep
+# Add bicep to your PATH (requires admin)
+sudo mv ./bicep /usr/local/bin/bicep
+# Verify you can now access the 'bicep' command
+bicep --help
+# Done!
+
 echo_message "Install kubectl"
 curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl" &&
     sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl

@@ -9,6 +9,6 @@ apt-get update && apt-get install -y wget && wget -qO- https://raw.githubusercon
 To install a number of Azure Pipeline Agents you can run:
 
 ```bash
-apt-get update && apt-get install -y wget && wget -qO- https://raw.githubusercontent.com/amgdy/devops-tools/main/devops-runners/ubnutu/install-ado-agents.sh | bash
+apt-get update && apt-get install -y wget && bash <(wget -qO- https://raw.githubusercontent.com/amgdy/devops-tools/main/devops-runners/ubnutu/install-ado-agents.sh)
 
 ```

@@ -34,12 +34,12 @@ while [[ ! $agents_count =~ ${is_number} ]]; do
     read -p "Number of agent to be installed? " -r agents_count
 done
 
-while [[ ! $org_url ]]; do
-    read -p "Azure DevOps Organization URL: " -r org_url
+while [[ ! $AZP_URL ]]; do
+    read -p "Azure DevOps Organization URL: " -r AZP_URL
 done
 
-while [[ ! $pat ]]; do
-    read -sp "Personal Access Token: " -r pat && printf "\n"
+while [[ ! $AZP_TOKEN ]]; do
+    read -sp "Personal Access Token: " -r AZP_TOKEN && printf "\n"
 done
 
 pool_name_default=Default
@@ -47,10 +47,10 @@ read -p "Target Agent Pool name ($pool_name_default): " -r pool_name
 pool_name=${pool_name:-${pool_name_default}}
 
 # Getting the latest version available from the agent online
-azagent_version=$(curl -s https://api.github.com/repos/microsoft/azure-pipelines-agent/releases/latest | jq -r '.tag_name[1:]')
+AZP_AGENT_VERSION=$(curl -s https://api.github.com/repos/microsoft/azure-pipelines-agent/releases/latest | jq -r '.tag_name[1:]')
 
 # Download the agent file
-wget -O azagent.tar.gz "https://vstsagentpackage.azureedge.net/agent/${azagent_version}/vsts-agent-linux-x64-${azagent_version}.tar.gz"
+wget -O azagent.tar.gz "https://vstsagentpackage.azureedge.net/agent/${AZP_AGENT_VERSION}/vsts-agent-linux-x64-${azagent_version}.tar.gz"
 
 echo_message "Agent downloaded"
 
@@ -73,21 +73,25 @@ while [ "$count" -lt "$agents_count" ]; do
         tar -xvf azagent.tar.gz -C "$azagent_folder_name"
         azagent_name="$(hostname)_$azagent_folder_name"
 
-        ./"${azagent_folder_name}"/config.sh --unattended --acceptTeeEula \
-            --url "$org_url" \
+        cd "$azagent_folder_name"
+
+        ./bin/installdependencies.sh
+
+        ./config.sh --unattended \
+            --acceptTeeEula \
+            --url "$AZP_URL" \
             --auth "pat" \
-            --token "$pat" \
+            --token "$AZP_TOKEN" \
             --pool "$pool_name" \
             --agent "$azagent_name" \
+            --work "${AZP_WORK:-_work}" \
             --replace
 
         echo_message "Agent with name $azagent_name configured at $azagent_folder_name"
 
-        cd "$azagent_folder_name"
+        ./svc.sh install
 
-        sudo ./svc.sh install
-
-        sudo ./svc.sh start
+        ./svc.sh start
 
         count=$((count + 1))
         cd ..
